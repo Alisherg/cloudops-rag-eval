@@ -66,6 +66,11 @@ resource "google_cloud_run_v2_service" "app" {
   location = var.region
   ingress  = "INGRESS_TRAFFIC_ALL"
 
+  scaling {
+    min_instance_count = 0
+    scaling_mode       = "AUTOMATIC"
+  }
+
   template {
     service_account = google_service_account.cloud_run.email
 
