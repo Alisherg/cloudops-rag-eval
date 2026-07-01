@@ -32,18 +32,6 @@ variable "allow_unauthenticated" {
   default     = true
 }
 
-variable "create_docs_bucket" {
-  description = "Create a small optional bucket for source documents."
-  type        = bool
-  default     = false
-}
-
-variable "docs_bucket_name" {
-  description = "Optional Cloud Storage bucket name. Leave empty to derive one."
-  type        = string
-  default     = ""
-}
-
 variable "budget_billing_account_id" {
   description = "Billing account ID for an optional budget alert. Leave empty to skip."
   type        = string

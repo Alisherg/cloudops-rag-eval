@@ -1,6 +1,17 @@
 locals {
-  docs_bucket_name = var.docs_bucket_name != "" ? var.docs_bucket_name : "${var.project_id}-${var.service_name}-docs"
-  budget_enabled   = var.budget_billing_account_id != "" && var.budget_alert_email != ""
+  budget_enabled = var.budget_billing_account_id != "" && var.budget_alert_email != ""
+  required_services = toset(
+    concat(
+      [
+        "artifactregistry.googleapis.com",
+        "run.googleapis.com",
+      ],
+      local.budget_enabled ? [
+        "billingbudgets.googleapis.com",
+        "monitoring.googleapis.com",
+      ] : []
+    )
+  )
 }
 
 data "google_project" "current" {
@@ -8,12 +19,7 @@ data "google_project" "current" {
 }
 
 resource "google_project_service" "required" {
-  for_each = toset([
-    "artifactregistry.googleapis.com",
-    "billingbudgets.googleapis.com",
-    "monitoring.googleapis.com",
-    "run.googleapis.com",
-  ])
+  for_each = local.required_services
 
   service            = each.value
   disable_on_destroy = false
@@ -118,18 +124,6 @@ resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
   location = google_cloud_run_v2_service.app.location
   role     = "roles/run.invoker"
   member   = "allUsers"
-}
-
-resource "google_storage_bucket" "docs" {
-  count                       = var.create_docs_bucket ? 1 : 0
-  name                        = local.docs_bucket_name
-  location                    = upper(var.region)
-  uniform_bucket_level_access = true
-  force_destroy               = true
-
-  versioning {
-    enabled = false
-  }
 }
 
 resource "google_monitoring_notification_channel" "budget_email" {

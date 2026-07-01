@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class LlmProvider(StrEnum):
     MOCK = "mock"
     OPENAI = "openai"
+    GEMINI = "gemini"
 
 
 class Settings(BaseSettings):
@@ -19,6 +20,10 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
+    gemini_api_key: SecretStr | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
+    gemini_max_output_tokens: int = Field(default=500, ge=64, le=4096)
     docs_path: Path = Path("docs/corpus")
     chroma_path: Path = Path(".chroma")
     retrieval_top_k: int = Field(default=4, ge=1, le=8)

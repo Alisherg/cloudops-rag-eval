@@ -30,13 +30,14 @@ RAG service
   +--> answer provider
          |
          +--> mock provider by default
-         +--> optional OpenAI-compatible chat completions provider
+         +--> optional Gemini or OpenAI-compatible provider
 ```
 
-For the demo, retrieval uses a local Chroma index with deterministic local embeddings. In a
-GCP production version, document storage could move to Cloud Storage and retrieval could use
-Vertex AI embeddings with AlloyDB/pgvector, Vertex AI Vector Search, or another managed
-backend based on latency and scale needs.
+For the demo, source docs live in the repo and are copied into the image. Retrieval uses a
+local Chroma index with deterministic local embeddings. In a GCP production version, document
+storage could move to Cloud Storage and retrieval could use Vertex AI embeddings with
+AlloyDB/pgvector, Vertex AI Vector Search, or another managed backend based on latency and
+scale needs.
 
 ## Stack
 
@@ -64,6 +65,13 @@ Open:
 - `http://127.0.0.1:8000/readyz`
 - `http://127.0.0.1:8000/docs`
 
+For a reproducible local run without Docker, use the lockfile:
+
+```bash
+uv sync --locked
+uv run --frozen uvicorn cloudops_rag_eval.main:app --host 127.0.0.1 --port 8000
+```
+
 Ask a question:
 
 ```bash
@@ -73,8 +81,15 @@ curl -s http://127.0.0.1:8000/v1/ask \
   -d '{"question":"How should I keep a Cloud Run demo cheap?"}' | jq
 ```
 
-The default `LLM_PROVIDER=mock` does not require any API key. To use an OpenAI-compatible
-chat completions endpoint:
+The default `LLM_PROVIDER=mock` does not require any API key. To use Gemini Flash:
+
+```bash
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+To use an OpenAI-compatible chat completions endpoint:
 
 ```bash
 LLM_PROVIDER=openai
@@ -124,6 +139,9 @@ uv run ruff check .
 uv run mypy src tests
 uv run pytest
 uv run rag-eval
+terraform -chdir=infra fmt -check -recursive
+terraform -chdir=infra init -backend=false
+terraform -chdir=infra validate
 docker build --tag cloudops-rag-eval:local .
 ```
 
@@ -160,19 +178,24 @@ Terraform is under `infra/`. It creates:
 - Artifact Registry Docker repository
 - Cloud Run v2 service
 - Cloud Run service account
-- optional Cloud Storage bucket for source docs
 - optional budget alert
 
 Defaults are intentionally small: Cloud Run min instances `0`, max instances `2`, 1 CPU,
-512 MiB memory, no database, no NAT gateway, no Cloud SQL, and no Firestore.
+512 MiB memory, no bucket, no database, no NAT gateway, no Cloud SQL, and no Firestore.
 
 Check current pricing before deploying:
 
 - [Cloud Run pricing](https://cloud.google.com/run/pricing)
 - [Google Cloud free features](https://docs.cloud.google.com/free/docs/free-cloud-features)
-- [Cloud Storage pricing](https://cloud.google.com/storage/pricing)
 
-Build and push:
+Install Terraform:
+
+```bash
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+Create the Artifact Registry repository first:
 
 ```bash
 export PROJECT_ID="$(gcloud config get-value project)"
@@ -180,20 +203,26 @@ export REGION="us-central1"
 export REPO="cloudops-rag-eval"
 export IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/app:demo"
 
-gcloud services enable artifactregistry.googleapis.com run.googleapis.com
-gcloud artifacts repositories create "$REPO" \
-  --repository-format=docker \
-  --location="$REGION" \
-  --description="Docker images for cloudops-rag-eval" || true
+terraform -chdir=infra init
+terraform -chdir=infra apply \
+  -target=google_project_service.required \
+  -target=google_artifact_registry_repository.app \
+  -var="project_id=$PROJECT_ID" \
+  -var="region=$REGION" \
+  -var="image=$IMAGE"
+```
+
+Build and push:
+
+```bash
 gcloud auth configure-docker "$REGION-docker.pkg.dev"
 docker build --tag "$IMAGE" .
 docker push "$IMAGE"
 ```
 
-Apply Terraform:
+Apply the Cloud Run service and optional budget alert:
 
 ```bash
-terraform -chdir=infra init
 terraform -chdir=infra apply \
   -var="project_id=$PROJECT_ID" \
   -var="region=$REGION" \
