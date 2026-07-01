@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cloud-run-cost-controls",
+    "question": "How should I keep a Cloud Run demo cheap?",
+    "expected_sources": ["billing-quotas", "faq"],
+    "expect_refusal": false
+  },
+  {
+    "id": "startup-loop",
+    "question": "A Cloud Run revision keeps restarting after deployment. What should I check?",
+    "expected_sources": ["troubleshooting", "cloud-run-deployments"],
+    "expect_refusal": false
+  },
+  {
+    "id": "api-token-scope",
+    "question": "Which scope lets an API token start or retry pipelines?",
+    "expected_sources": ["security-access", "api-reference"],
+    "expect_refusal": false
+  },
+  {
+    "id": "artifact-permissions",
+    "question": "My model service cannot read a gs:// artifact. What is the likely cause?",
+    "expected_sources": ["troubleshooting", "ml-pipelines"],
+    "expect_refusal": false
+  },
+  {
+    "id": "kubernetes-unsupported",
+    "question": "Can Acme CloudOps deploy to customer-managed Kubernetes clusters?",
+    "expected_sources": ["faq", "onboarding"],
+    "expect_refusal": true
+  },
+  {
+    "id": "legal-certification",
+    "question": "What legal compliance certifications does Acme CloudOps provide?",
+    "expected_sources": ["security-access"],
+    "expect_refusal": true
+  }
+]
