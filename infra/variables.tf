@@ -37,10 +37,11 @@ variable "llm_provider" {
   }
 }
 
-variable "gemini_api_key_secret" {
-  description = "Secret Manager secret ID containing the Gemini API key. Required when llm_provider is gemini."
+variable "gemini_api_key" {
+  description = "Gemini API key for Cloud Run. Stored in Terraform state; do not commit state files."
   type        = string
   default     = ""
+  sensitive   = true
 }
 
 variable "gemini_model" {

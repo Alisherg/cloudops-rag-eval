@@ -228,7 +228,7 @@ terraform -chdir=infra apply \
   -var="region=$REGION" \
   -var="image=$IMAGE" \
   -var="llm_provider=gemini" \
-  -var="gemini_api_key_secret=cloudops-rag-eval-gemini-api-key" \
+  -var="gemini_api_key=$GEMINI_API_KEY" \
   -var="gemini_model=gemini-2.5-flash" \
   -var="budget_billing_account_id=XXXXXX-XXXXXX-XXXXXX" \
   -var="budget_alert_email=you@example.com"
@@ -236,17 +236,8 @@ terraform -chdir=infra apply \
 
 Skip the budget variables if you do not have billing-budget permissions, but create a budget
 alert in the console before an interview demo.
-
-Create or update the Gemini secret before applying with `llm_provider=gemini`:
-
-```bash
-printf '%s' "$GEMINI_API_KEY" | gcloud secrets create cloudops-rag-eval-gemini-api-key \
-  --data-file=- \
-  --replication-policy=automatic
-
-printf '%s' "$GEMINI_API_KEY" | gcloud secrets versions add cloudops-rag-eval-gemini-api-key \
-  --data-file=-
-```
+Passing `gemini_api_key` this way stores it in local Terraform state, so keep state files out
+of git and delete local state after the demo if you no longer need it.
 
 Clean up after the demo:
 

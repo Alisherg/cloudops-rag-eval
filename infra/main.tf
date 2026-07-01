@@ -1,15 +1,12 @@
 locals {
   budget_enabled = var.budget_billing_account_id != "" && var.budget_alert_email != ""
-  gemini_enabled = var.llm_provider == "gemini" && var.gemini_api_key_secret != ""
+  gemini_enabled = var.llm_provider == "gemini" && var.gemini_api_key != ""
   required_services = toset(
     concat(
       [
         "artifactregistry.googleapis.com",
         "run.googleapis.com",
       ],
-      local.gemini_enabled ? [
-        "secretmanager.googleapis.com",
-      ] : [],
       local.budget_enabled ? [
         "billingbudgets.googleapis.com",
         "monitoring.googleapis.com",
@@ -60,15 +57,6 @@ resource "google_artifact_registry_repository" "app" {
 resource "google_service_account" "cloud_run" {
   account_id   = "${var.service_name}-run"
   display_name = "${var.service_name} Cloud Run"
-
-  depends_on = [google_project_service.required]
-}
-
-resource "google_secret_manager_secret_iam_member" "gemini_api_key" {
-  count     = local.gemini_enabled ? 1 : 0
-  secret_id = var.gemini_api_key_secret
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.cloud_run.email}"
 
   depends_on = [google_project_service.required]
 }
@@ -132,14 +120,8 @@ resource "google_cloud_run_v2_service" "app" {
         for_each = local.gemini_enabled ? [1] : []
 
         content {
-          name = "GEMINI_API_KEY"
-
-          value_source {
-            secret_key_ref {
-              secret  = var.gemini_api_key_secret
-              version = "latest"
-            }
-          }
+          name  = "GEMINI_API_KEY"
+          value = var.gemini_api_key
         }
       }
 
@@ -157,7 +139,6 @@ resource "google_cloud_run_v2_service" "app" {
 
   depends_on = [
     google_artifact_registry_repository.app,
-    google_secret_manager_secret_iam_member.gemini_api_key,
     google_project_service.required,
   ]
 }
