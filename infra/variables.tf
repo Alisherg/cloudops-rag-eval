@@ -26,6 +26,41 @@ variable "image" {
   type        = string
 }
 
+variable "llm_provider" {
+  description = "Answer provider for the deployed service."
+  type        = string
+  default     = "mock"
+
+  validation {
+    condition     = contains(["mock", "gemini", "openai"], var.llm_provider)
+    error_message = "llm_provider must be one of: mock, gemini, openai."
+  }
+}
+
+variable "gemini_api_key_secret" {
+  description = "Secret Manager secret ID containing the Gemini API key. Required when llm_provider is gemini."
+  type        = string
+  default     = ""
+}
+
+variable "gemini_model" {
+  description = "Gemini model name."
+  type        = string
+  default     = "gemini-2.5-flash"
+}
+
+variable "gemini_timeout_seconds" {
+  description = "Gemini request timeout in seconds."
+  type        = number
+  default     = 20
+}
+
+variable "gemini_max_output_tokens" {
+  description = "Maximum Gemini output tokens."
+  type        = number
+  default     = 500
+}
+
 variable "allow_unauthenticated" {
   description = "Allow public unauthenticated access to the Cloud Run service."
   type        = bool

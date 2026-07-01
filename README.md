@@ -227,12 +227,26 @@ terraform -chdir=infra apply \
   -var="project_id=$PROJECT_ID" \
   -var="region=$REGION" \
   -var="image=$IMAGE" \
+  -var="llm_provider=gemini" \
+  -var="gemini_api_key_secret=cloudops-rag-eval-gemini-api-key" \
+  -var="gemini_model=gemini-2.5-flash" \
   -var="budget_billing_account_id=XXXXXX-XXXXXX-XXXXXX" \
   -var="budget_alert_email=you@example.com"
 ```
 
 Skip the budget variables if you do not have billing-budget permissions, but create a budget
 alert in the console before an interview demo.
+
+Create or update the Gemini secret before applying with `llm_provider=gemini`:
+
+```bash
+printf '%s' "$GEMINI_API_KEY" | gcloud secrets create cloudops-rag-eval-gemini-api-key \
+  --data-file=- \
+  --replication-policy=automatic
+
+printf '%s' "$GEMINI_API_KEY" | gcloud secrets versions add cloudops-rag-eval-gemini-api-key \
+  --data-file=-
+```
 
 Clean up after the demo:
 
