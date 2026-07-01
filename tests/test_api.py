@@ -10,6 +10,7 @@ def test_health_and_readiness(tmp_path: Path) -> None:
     app = create_app(Settings(chroma_path=tmp_path / "chroma", min_relevance_score=0.0))
 
     with TestClient(app) as client:
+        assert client.get("/health").json() == {"status": "ok"}
         assert client.get("/healthz").json() == {"status": "ok"}
         ready = client.get("/readyz")
 

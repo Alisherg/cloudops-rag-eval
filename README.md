@@ -61,6 +61,7 @@ uv run uvicorn cloudops_rag_eval.main:app --reload
 
 Open:
 
+- `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/healthz`
 - `http://127.0.0.1:8000/readyz`
 - `http://127.0.0.1:8000/docs`
@@ -102,9 +103,14 @@ Do not commit `.env` files or secrets.
 
 ## API
 
-`GET /healthz`
+`GET /health`
 
 Returns process health.
+
+`GET /healthz`
+
+Same process-health response. Use `/health` on Cloud Run default domains because Google
+frontends can intercept the exact `/healthz` path before it reaches the container.
 
 `GET /readyz`
 
