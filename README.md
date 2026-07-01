@@ -216,8 +216,7 @@ Build and push:
 
 ```bash
 gcloud auth configure-docker "$REGION-docker.pkg.dev"
-docker build --tag "$IMAGE" .
-docker push "$IMAGE"
+docker buildx build --platform linux/amd64 --tag "$IMAGE" --push .
 ```
 
 Apply the Cloud Run service and optional budget alert:
