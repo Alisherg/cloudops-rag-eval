@@ -1,0 +1,58 @@
+[project]
+name = "cloudops-rag-eval"
+version = "0.1.0"
+description = "FastAPI RAG evaluation service for a synthetic cloud operations corpus."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Alisher", email = "alisherganiev@gmail.com" }]
+dependencies = [
+    "chromadb>=0.5.23,<1.0",
+    "fastapi>=0.115.6,<1.0",
+    "httpx>=0.28.1,<1.0",
+    "posthog>=3.0,<6.0",
+    "pydantic>=2.10.4,<3.0",
+    "pydantic-settings>=2.7.1,<3.0",
+    "uvicorn[standard]>=0.34.0,<1.0",
+]
+
+[project.scripts]
+rag-eval = "cloudops_rag_eval.eval_runner:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1,<2.0",
+    "pre-commit>=4.0.1,<5.0",
+    "pytest>=8.3.4,<9.0",
+    "pytest-asyncio>=0.25.2,<1.0",
+    "ruff>=0.9.2,<1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cloudops_rag_eval"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+    "ignore:Accessing the 'model_fields' attribute on the instance is deprecated:pydantic.warnings.PydanticDeprecatedSince211",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+disallow_untyped_decorators = false
+ignore_missing_imports = true
+warn_unused_ignores = true
+exclude = ["^infra/"]
