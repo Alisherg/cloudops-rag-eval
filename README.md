@@ -5,9 +5,6 @@ service demonstrates local retrieval with Chroma, grounded answers with citation
 IDs, structured JSON logs, a lightweight evaluation harness, Docker, Terraform for Cloud Run,
 and GitHub Actions checks.
 
-The corpus is fictional and intentionally small enough to review during an interview. It does
-not contain private company, client, or challenge documents.
-
 ## Architecture
 
 ```text
@@ -33,7 +30,7 @@ RAG service
          +--> optional Gemini or OpenAI-compatible provider
 ```
 
-For the demo, source docs live in the repo and are copied into the image. Retrieval uses a
+Source docs live in the repo and are copied into the image. Retrieval uses a
 local Chroma index with deterministic local embeddings. In a GCP production version, document
 storage could move to Cloud Storage and retrieval could use Vertex AI embeddings with
 AlloyDB/pgvector, Vertex AI Vector Search, or another managed backend based on latency and
@@ -186,14 +183,6 @@ Terraform is under `infra/`. It creates:
 - Cloud Run service account
 - optional budget alert
 
-Defaults are intentionally small: Cloud Run min instances `0`, max instances `2`, 1 CPU,
-512 MiB memory, no bucket, no database, no NAT gateway, no Cloud SQL, and no Firestore.
-
-Check current pricing before deploying:
-
-- [Cloud Run pricing](https://cloud.google.com/run/pricing)
-- [Google Cloud free features](https://docs.cloud.google.com/free/docs/free-cloud-features)
-
 Install Terraform:
 
 ```bash
@@ -239,12 +228,9 @@ terraform -chdir=infra apply \
   -var="budget_alert_email=you@example.com"
 ```
 
-Skip the budget variables if you do not have billing-budget permissions, but create a budget
-alert in the console before an interview demo.
-Passing `gemini_api_key` this way stores it in local Terraform state, so keep state files out
-of git and delete local state after the demo if you no longer need it.
+Passing `gemini_api_key` this way stores it in local Terraform state, so keep state files out of git and delete local state if you no longer need it.
 
-Clean up after the demo:
+Clean up:
 
 ```bash
 terraform -chdir=infra destroy \
